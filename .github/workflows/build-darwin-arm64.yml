@@ -1,0 +1,53 @@
+name: Build Teleport 5.0.2 for Apple Silicon
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - apple-silicon-v5.0.2
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.17.13
+          cache: false
+
+      - name: Build native arm64 binaries
+        env:
+          CGO_ENABLED: "1"
+        run: |
+          set -euxo pipefail
+          test "$(uname -m)" = arm64
+          make all OS=darwin ARCH=arm64
+
+      - name: Verify and package
+        run: |
+          set -euxo pipefail
+          mkdir -p dist/teleport-v5.0.2-darwin-arm64
+          cp build/teleport build/tctl build/tsh LICENSE README.md dist/teleport-v5.0.2-darwin-arm64/
+          file dist/teleport-v5.0.2-darwin-arm64/teleport \
+               dist/teleport-v5.0.2-darwin-arm64/tctl \
+               dist/teleport-v5.0.2-darwin-arm64/tsh
+          dist/teleport-v5.0.2-darwin-arm64/teleport version
+          dist/teleport-v5.0.2-darwin-arm64/tctl version
+          dist/teleport-v5.0.2-darwin-arm64/tsh version
+          tar -C dist -czf dist/teleport-v5.0.2-darwin-arm64.tar.gz teleport-v5.0.2-darwin-arm64
+          shasum -a 256 dist/teleport-v5.0.2-darwin-arm64.tar.gz > dist/teleport-v5.0.2-darwin-arm64.tar.gz.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: teleport-v5.0.2-darwin-arm64
+          path: |
+            dist/teleport-v5.0.2-darwin-arm64.tar.gz
+            dist/teleport-v5.0.2-darwin-arm64.tar.gz.sha256
+          if-no-files-found: error
