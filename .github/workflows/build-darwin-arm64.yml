@@ -14,8 +14,9 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Fetch OSS web assets
+        run: git submodule update --init --depth=1 webassets
 
       - uses: actions/setup-go@v5
         with:
