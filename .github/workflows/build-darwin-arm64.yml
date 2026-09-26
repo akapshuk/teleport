@@ -43,7 +43,7 @@ jobs:
           dist/teleport-v5.0.2-darwin-arm64/tctl version
           dist/teleport-v5.0.2-darwin-arm64/tsh version
           tar -C dist -czf dist/teleport-v5.0.2-darwin-arm64.tar.gz teleport-v5.0.2-darwin-arm64
-          shasum -a 256 dist/teleport-v5.0.2-darwin-arm64.tar.gz > dist/teleport-v5.0.2-darwin-arm64.tar.gz.sha256
+          (cd dist && shasum -a 256 teleport-v5.0.2-darwin-arm64.tar.gz > teleport-v5.0.2-darwin-arm64.tar.gz.sha256)
 
       - uses: actions/upload-artifact@v4
         with:
